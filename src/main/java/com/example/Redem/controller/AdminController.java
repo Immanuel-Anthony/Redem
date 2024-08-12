@@ -1,5 +1,6 @@
 package com.example.Redem.controller;
 
+import com.example.Redem.cache.ApplicationCache;
 import com.example.Redem.entity.UserEntity;
 import com.example.Redem.repository.UserRepository;
 import com.example.Redem.service.UserService;
@@ -19,6 +20,9 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ApplicationCache applicationCache;
+
     @GetMapping("/all-users")
     public ResponseEntity<?> getAllUsers(){
         List<UserEntity> usersFound = userService.getAll();
@@ -32,6 +36,11 @@ public class AdminController {
     public ResponseEntity<?> makeAdmin(@RequestBody UserEntity user){
         userService.createAdmin(user);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("clear-app-cache")
+    public void clearAppCache(){
+        applicationCache.init();
     }
 
 }
