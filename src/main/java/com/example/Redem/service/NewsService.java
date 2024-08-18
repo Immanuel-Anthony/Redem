@@ -22,11 +22,22 @@ public class NewsService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private RedisService redisService;
+
     public NewsResponse getNews(String country){
-        String final_API = applicationCache.appCache.get(ApplicationCache.keys.news_api.toString()).replace(Placeholders.country, country).replace(Placeholders.apiKey , apiKey);
-        ResponseEntity<NewsResponse> response = restTemplate.exchange(final_API, HttpMethod.GET, null, NewsResponse.class);
-        NewsResponse newsResponse = response.getBody();
-        return newsResponse;
+        NewsResponse news = redisService.get("news_of_" + country , NewsResponse.class);
+        if(news != null){
+            return news;
+        } else {
+            String final_API = applicationCache.appCache.get(ApplicationCache.keys.news_api.toString()).replace(Placeholders.country, country).replace(Placeholders.apiKey , apiKey);
+            ResponseEntity<NewsResponse> response = restTemplate.exchange(final_API, HttpMethod.GET, null, NewsResponse.class);
+            NewsResponse newsResponse = response.getBody();
+            if(newsResponse != null){
+                redisService.set("news_of_" + country , newsResponse , 300l);
+            }
+            return newsResponse;
+        }
     }
 
 }
